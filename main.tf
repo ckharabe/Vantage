@@ -1,4 +1,12 @@
- data "azurerm_resource_group" "RG1" {
+provider "azurerm" {
+client_id = "6d41da4e-773b-4a87-a599-69b30e68317d"
+client_secret = "p~We1._-8Nv520.oRL0MiPurP4PTVqw6MM"
+subscription_id = "cfde4035-44d8-4bee-a995-eb9199a8a2c1"
+tenant_id = "c7183232-e1e7-424d-9b37-ab787c4a6c0c"
+features {}
+}
+
+data "azurerm_resource_group" "RG1" {
  name = var.resource_group_name
  }
 
