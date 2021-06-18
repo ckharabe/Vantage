@@ -1,31 +1,98 @@
-pipeline {
-    agent any
+pipeline{
+agent any
+tools {
+"org.jenkinsci.plugins.terraform.TerraformInstallation" "terraform"
+}
+environment {
+TF_HOME = tool('terraform')
+TF_IN_AUTOMATION = "true"
+PATH = "$TF_HOME:$PATH"
+}
+stages {
+stage('Terraform Init'){
+steps {
+ansiColor('xterm') {
+withCredentials([azureServicePrincipal(
+credentialsId: 'Azure_Spn',
+subscriptionIdVariable: 'ARM_SUBSCRIPTION_ID',
+clientIdVariable: 'ARM_CLIENT_ID',
+clientSecretVariable: 'ARM_CLIENT_SECRET',
+tenantIdVariable: 'ARM_TENANT_ID'
+), string(credentialsId: 'access_key', variable: 'ARM_ACCESS_KEY')]) {
+sh """
+echo "Initialising Terraform"
+terraform init -backend-config="access_key=$ARM_ACCESS_KEY"
+"""
+}
+}
+}
+}
 
-    stages {
-        stage('Checkout') {
-        steps {
-            checkout scm
-            script {          
-                git branch: 'Network', credentialsId: 'Git', url: 'https://github.com/YogeshBaldha/Vantage.git'
-                }
-            }
-        }          
-        stage('Build') {
-            steps {                   
-                sh 'az login --service-principal -u "6d41da4e-773b-4a87-a599-69b30e68317d" -p "p~We1._-8Nv520.oRL0MiPurP4PTVqw6MM" -t "c7183232-e1e7-424d-9b37-ab787c4a6c0c"'               
-                sh "terraform init -input=false"
-                         
-            }
-        }               
-        stage('Test') {
-            steps {
-                echo 'Testing..'
-            }
-        }
-        stage('Deploy') {
-            steps {
-                sh 'terraform apply -auto-approve'
-            }
-        }
-    }
+ stage('Terraform Validate'){
+steps {
+ansiColor('xterm') {
+withCredentials([azureServicePrincipal(
+credentialsId: 'Azure_Spn',
+subscriptionIdVariable: 'ARM_SUBSCRIPTION_ID',
+clientIdVariable: 'ARM_CLIENT_ID',
+clientSecretVariable: 'ARM_CLIENT_SECRET',
+tenantIdVariable: 'ARM_TENANT_ID'
+), string(credentialsId: 'access_key', variable: 'ARM_ACCESS_KEY')]) {
+sh """
+terraform validate
+"""
+}
+}
+}
+}
+
+ stage('Terraform Plan'){
+steps {
+
+ ansiColor('xterm') {
+withCredentials([azureServicePrincipal(
+credentialsId: 'Azure_Spn',
+subscriptionIdVariable: 'ARM_SUBSCRIPTION_ID',
+clientIdVariable: 'ARM_CLIENT_ID',
+clientSecretVariable: 'ARM_CLIENT_SECRET',
+tenantIdVariable: 'ARM_TENANT_ID'
+), string(credentialsId: 'access_key', variable: 'ARM_ACCESS_KEY')]) {
+sh """
+echo "Creating Terraform Plan"
+terraform plan -var "client_id=$ARM_CLIENT_ID" -var "client_secret=$ARM_CLIENT_SECRET" -var "subscription_id=$ARM_SUBSCRIPTION_ID" -var "tenant_id=$ARM_TENANT_ID"
+"""
+}
+}
+}
+}
+
+ stage('Waiting for Approval'){
+steps {
+timeout(time: 10, unit: 'MINUTES') {
+input (message: "Deploy the infrastructure?")
+}
+}
+}
+
+ stage('Terraform Apply'){
+steps {
+ansiColor('xterm') {
+withCredentials([azureServicePrincipal(
+credentialsId: 'Azure_Spn',
+subscriptionIdVariable: 'ARM_SUBSCRIPTION_ID',
+clientIdVariable: 'ARM_CLIENT_ID',
+clientSecretVariable: 'ARM_CLIENT_SECRET',
+tenantIdVariable: 'ARM_TENANT_ID'
+), string(credentialsId: 'access_key', variable: 'ARM_ACCESS_KEY')]) {
+
+ sh """
+echo "Applying the plan"
+terraform apply -auto-approve -var "client_id=$ARM_CLIENT_ID" -var "client_secret=$ARM_CLIENT_SECRET" -var "subscription_id=$ARM_SUBSCRIPTION_ID" -var "tenant_id=$ARM_TENANT_ID"
+"""
+}
+}
+}
+}
+
+}
 }
