@@ -1,4 +1,5 @@
 pipeline{
+Agent Any
 environment {
 TF_HOME = tool('terraform')
 TF_IN_AUTOMATION = "true"
