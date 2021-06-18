@@ -1,7 +1,7 @@
 variable "resource_group_name" {
   description     =       "Virtual Network variables"
     type            =       string
-  default = "Shreyesh"
+  default = "Shreyesh1"
 }
 variable "resource_group_name2" { 
   description     =       "Virtual Network variables"
