@@ -1,8 +1,13 @@
 variable "resource_group_name" {
-  
+  description     =       "Virtual Network variables"
+    type            =       string
+  default = "Shreyesh"
 }
-variable "resource_group_name2" { }
-
+variable "resource_group_name2" { 
+  description     =       "Virtual Network variables"
+    type            =      string
+  default = "Chetan"
+} 
 # - VNET Variables
 
 variable "virtual_network" {
