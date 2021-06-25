@@ -8,7 +8,7 @@ pipeline {
         steps {
             checkout scm
             script {          
-                git branch: 'Network', credentialsId: 'Git', url: 'https://github.com/YogeshBaldha/Vantage.git'
+                git branch: '*/main/Storage Account', credentialsId: 'Git', url: 'https://github.com/YogeshBaldha/Vantage.git'
                 }
             }
         }          
